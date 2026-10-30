@@ -59,10 +59,13 @@ IntelliJ IDEA сама скачивает исходники `koin-core-jvm-4.2.
 
 - `single { NoteRepository(get()) }` → `factory { ... }`: сценарий 2 покажет разные репозитории.
 - `scoped { EditSession(get()) }` → `factory { ... }` внутри `scope`: в одном скоупе станут разные объекты.
-- Убрать `named("upper")` у второго форматтера: у обоих станет один ключ в HashMap, и по умолчанию
-  второе определение молча заменит первое (`InstanceRegistry.saveMapping`, `allowOverride = true`;
-  с `--args=debug` видно предупреждение `override index`). Если в `startKoin` добавить
-  `allowOverride(false)`, старт упадёт с `DefinitionOverrideException`.
+- Убрать `named("upper")` у второго форматтера: у обоих станет один ключ, и внутри одного модуля
+  второе определение молча заменит первое (`Module.saveMapping`: `mappings[key] = factory`).
+  `get<NoteFormatter>()` вернёт `UpperFormatter`, а сценарий 3 упадёт на `get(named("upper"))`
+  с `NoDefinitionFoundException`.
+- Тот же дубль, но во втором модуле (`modules(appModule, extraModule)`): перезапись идёт в
+  `InstanceRegistry.saveMapping` — с `--args=debug` видно `[WARNING] override index`. Если в `startKoin`
+  добавить `allowOverride(false)`, старт упадёт с `DefinitionOverrideException`.
 - `single(createdAtStart = true) { Database() }`: `Database` создастся при `startKoin`, а не при первом `get()`.
 
 ## Использование ИИ
